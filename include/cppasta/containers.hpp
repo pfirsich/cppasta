@@ -4,11 +4,10 @@
 
 namespace pasta {
 
-template <typename MapType>
-auto getKeys(const MapType& map)
+template <typename MapType, typename OutContainer = std::vector<typename MapType::key_type>>
+OutContainer getKeys(const MapType& map)
 {
-    using KeyType = MapType::mapped_type;
-    std::vector<KeyType> keys;
+    OutContainer keys;
     keys.reserve(map.size());
     for (const auto& elem : map) {
         keys.push_back(elem.first);
@@ -16,16 +15,27 @@ auto getKeys(const MapType& map)
     return keys;
 }
 
-template <typename MapType>
-auto getValues(const MapType& map)
+template <typename MapType, typename OutContainer = std::vector<typename MapType::mapped_type>>
+OutContainer getValues(const MapType& map)
 {
-    using ValueType = MapType::key_type;
-    std::vector<ValueType> vals;
+    OutContainer vals;
     vals.reserve(map.size());
     for (const auto& elem : map) {
         vals.push_back(elem.second);
     }
     return vals;
+}
+
+template <typename InContainer, typename Func,
+    typename OutContainer
+    = std::vector<std::invoke_result_t<Func, typename InContainer::value_type>>>
+OutContainer transform(const InContainer& in, Func&& func)
+{
+    OutContainer out;
+    for (const auto& v : in) {
+        out.push_back(func(v));
+    }
+    return out;
 }
 
 template <typename Index = size_t>

@@ -6,22 +6,23 @@
 
 namespace pasta {
 
-extern std::default_random_engine rng;
+std::default_random_engine& getRng();
 
 template <typename IntType>
-std::enable_if_t<std::is_integral_v<IntType>, IntType> rand(IntType min, IntType max)
+std::enable_if_t<std::is_integral_v<IntType>, IntType> random(IntType min, IntType max)
 {
     using DistType = std::uniform_int_distribution<IntType>;
     static DistType dist;
-    return dist(rng, typename DistType::param_type(min, max));
+    return dist(getRng(), typename DistType::param_type(min, max));
 }
 
 template <typename FloatType>
-std::enable_if_t<std::is_floating_point_v<FloatType>, FloatType> rand(FloatType min, FloatType max)
+std::enable_if_t<std::is_floating_point_v<FloatType>, FloatType> random(
+    FloatType min, FloatType max)
 {
     using DistType = std::uniform_real_distribution<FloatType>;
     static DistType dist;
-    return dist(rng, typename DistType::param_type(min, max));
+    return dist(getRng(), typename DistType::param_type(min, max));
 }
 
 template <class, class Enable = void>
@@ -37,51 +38,51 @@ struct is_iterator<T,
 };
 
 template <typename Iterator>
-std::enable_if_t<is_iterator<Iterator>::value, Iterator> rand(Iterator begin, Iterator end)
+std::enable_if_t<is_iterator<Iterator>::value, Iterator> random(Iterator begin, Iterator end)
 {
     const auto size = std::distance(begin, end);
     LOG_ASSERT(size > 0, "Calling rand() on empty container");
     if (size == 0)
         return begin;
-    return std::next(begin, rand<decltype(size)>(0, size - 1));
+    return std::next(begin, random<decltype(size)>(0, size - 1));
 }
 
 template <typename Container>
-auto rand(Container&& container) -> decltype(*container.begin())
+auto random(Container&& container) -> decltype(*container.begin())
 {
-    return *rand(
+    return *random(
         std::forward<Container>(container).begin(), std::forward<Container>(container).end());
 }
 
 template <typename T>
-T rand();
+T random();
 
 template <>
-inline float rand()
+inline float random()
 {
     static std::uniform_real_distribution<float> dist(0.f, 1.f);
-    return dist(rng);
+    return dist(getRng());
 }
 
 template <>
-inline bool rand()
+inline bool random()
 {
     static std::uniform_int_distribution<int> dist(0, 1);
-    return dist(rng) == 1;
+    return dist(getRng()) == 1;
 }
 
 template <typename Container>
 void shuffle(Container&& container)
 {
-    std::shuffle(
-        std::forward<Container>(container).begin(), std::forward<Container>(container).end(), rng);
+    std::shuffle(std::forward<Container>(container).begin(),
+        std::forward<Container>(container).end(), getRng());
 }
 
 template <typename Container>
 auto shuffled(const Container& container)
 {
     auto copy = container;
-    std::shuffle(copy.begin(), copy.end(), rng);
+    std::shuffle(copy.begin(), copy.end(), getRng());
     return copy;
 }
 

@@ -21,9 +21,15 @@ std::optional<T> parseInt(const std::string& str, int base = 10)
 {
     static constexpr auto min = std::numeric_limits<T>::min();
     static constexpr auto max = std::numeric_limits<T>::max();
+    using IntMax = std::conditional_t<std::is_unsigned_v<T>, uintmax_t, intmax_t>;
     try {
         size_t pos = 0;
-        const auto val = std::stoll(str, &pos, base);
+        IntMax val;
+        if constexpr (std::is_unsigned_v<T>) {
+            val = std::stoull(str, &pos, base);
+        } else {
+            val = std::stoll(str, &pos, base);
+        }
         if (pos < str.size())
             return std::nullopt;
         if (val < min || val > max)
@@ -43,5 +49,8 @@ std::vector<std::string> split(const std::string& str);
 
 // Split string between delimiters, e.g.: ("ab  cd", ' ') -> {"ab", "", "cd"}
 std::vector<std::string> split(const std::string& str, char delim);
+
+bool startsWith(std::string_view str, std::string_view with);
+bool endsWith(std::string_view str, std::string_view with);
 
 }

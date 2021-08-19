@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fmt/format.hpp>
+#include <fmt/format.h>
 
 namespace pasta {
 
