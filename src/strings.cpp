@@ -63,13 +63,12 @@ std::vector<std::string> split(const std::string& str)
 
 bool startsWith(std::string_view str, std::string_view with)
 {
-    return str.rfind(with, 0) == 0;
+    return str.substr(0, with.size()) == with;
 }
 
 bool endsWith(std::string_view str, std::string_view with)
 {
-    const auto pos = str.size() - with.size();
-    return str.find(with, pos) == pos;
+    return str.substr(str.size() - with.size()) == with;
 }
 
 }
