@@ -43,7 +43,9 @@ std::enable_if_t<is_iterator<Iterator>::value, Iterator> random(Iterator begin, 
     const auto size = std::distance(begin, end);
     if (size == 0)
         return begin;
-    return std::next(begin, random<decltype(size)>(0, size - 1));
+    // MSVC does not allow uniform_int_distribution with size_t,
+    // even though it does allow unsigned long long and both are uint64.
+    return std::next(begin, random<unsigned long long>(0, size - 1));
 }
 
 template <typename Container>
