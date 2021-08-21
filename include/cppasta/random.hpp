@@ -41,7 +41,6 @@ template <typename Iterator>
 std::enable_if_t<is_iterator<Iterator>::value, Iterator> random(Iterator begin, Iterator end)
 {
     const auto size = std::distance(begin, end);
-    LOG_ASSERT(size > 0, "Calling rand() on empty container");
     if (size == 0)
         return begin;
     return std::next(begin, random<decltype(size)>(0, size - 1));
