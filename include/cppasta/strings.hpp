@@ -35,7 +35,7 @@ std::optional<T> parseInt(const std::string& str, int base = 10)
         if (val < min || val > max)
             return std::nullopt;
         return static_cast<T>(val);
-    } catch (const std::exception& exc) {
+    } catch (const std::exception&) {
         return std::nullopt;
     }
 }
