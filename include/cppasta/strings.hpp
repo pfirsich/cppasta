@@ -42,13 +42,13 @@ std::optional<T> parseInt(const std::string& str, int base = 10)
 
 std::optional<float> parseFloat(const std::string& str);
 
-std::string toLower(const std::string& str);
+std::string toLower(std::string_view str);
 
 // Split string between whitespace, e.g.: ("ab  cd") -> {"ab", "cd"}
-std::vector<std::string> split(const std::string& str);
+std::vector<std::string> split(std::string_view str);
 
 // Split string between delimiters, e.g.: ("ab  cd", ' ') -> {"ab", "", "cd"}
-std::vector<std::string> split(const std::string& str, char delim);
+std::vector<std::string> split(std::string_view str, char delim);
 
 bool startsWith(std::string_view str, std::string_view with);
 bool endsWith(std::string_view str, std::string_view with);
