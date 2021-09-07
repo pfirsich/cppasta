@@ -1,41 +1,23 @@
 #pragma once
 
-#include <algorithm>
 #include <cstdint>
-#include <cstring>
+#include <optional>
+#include <string>
+#include <string_view>
 
 namespace pasta {
 
 bool isAscii(char ch); // i.e. is single-byte code point
+bool is4CodeUnitLeader(char c);
+bool is2CodeUnitLeader(char c);
+bool is3CodeUnitLeader(char c);
 bool isContinuationByte(char ch);
+// Simply returns the size of the code point according to it's first code unit
 size_t getCodePointLength(char firstCodeUnit);
-
-// This function reports a smaller length, if the code point is malformed.
-// Possible cases:
-// * The buffer is too small to fit the whole code point
-// * The code units after the first are not continuation bytes
-// It's templated, so I can use it with TextBuffer
-// size is the full size of the buffer (not the remaining size after offset).
-template <typename Buffer>
-size_t getCodePointLength(const Buffer& buffer, size_t size, size_t offset)
-{
-    if (offset >= size)
-        return 0;
-
-    const auto ch = buffer[offset];
-    const auto cpLen = std::min(getCodePointLength(ch), size - offset);
-    if (cpLen == 1) {
-        assert(isAscii(ch));
-        return 1;
-    }
-
-    for (size_t i = 1; i < cpLen; ++i) {
-        if (!isContinuationByte(buffer[offset + i])) {
-            // Pretend the code point ended and the next byte is another code point.
-            return i;
-        }
-    }
-    return cpLen;
-}
+// This function also checks whether the following bytes (if the code point is > 1 unit)
+// are adequately formed. If not, a shorter size it returned.
+size_t getCodePointLength(std::string_view str);
+std::optional<uint32_t> decode(std::string_view str);
+std::optional<std::string> encode(uint32_t codePoint);
 
 }
