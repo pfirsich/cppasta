@@ -2,14 +2,15 @@
 
 namespace pasta {
 
-std::string hexString(const uint8_t* data, size_t size)
+std::string hexString(const void* data, size_t size)
 {
     static const char hexDigits[] = "0123456789ABCDEF";
+    const auto iData = reinterpret_cast<const uint8_t*>(data);
 
     std::string out;
     out.reserve(size * 3);
     for (size_t i = 0; i < size; ++i) {
-        const auto c = data[i];
+        const auto c = iData[i];
         out.push_back(hexDigits[c >> 4]);
         out.push_back(hexDigits[c & 15]);
     }
