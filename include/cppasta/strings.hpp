@@ -50,6 +50,21 @@ std::vector<std::string> split(std::string_view str);
 // Split string between delimiters, e.g.: ("ab  cd", ' ') -> {"ab", "", "cd"}
 std::vector<std::string> split(std::string_view str, char delim);
 
+template <typename Container>
+std::string join(const Container& container, std::string_view delim)
+{
+    std::string concat;
+    bool first = true;
+    for (const auto& elem : container) {
+        if (!first) {
+            concat += delim;
+        }
+        first = false;
+        concat += elem;
+    }
+    return concat;
+}
+
 bool startsWith(std::string_view str, std::string_view with);
 bool endsWith(std::string_view str, std::string_view with);
 
