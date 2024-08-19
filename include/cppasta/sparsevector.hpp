@@ -8,20 +8,24 @@ namespace pasta {
 
 template <typename T>
 class SparseVector {
-private:
-    using DataElem = std::aligned_storage_t<sizeof(T), alignof(T)>;
-
 public:
     SparseVector() = default;
+
     SparseVector(size_t size)
-        : data_(new DataElem[size])
-        , occupied_(size, bool_ { false })
+        : data_(alloc(size))
+        , size_(size)
+        , occupied_(size, 0)
     {
     }
 
     ~SparseVector()
     {
-        delete[] data_;
+        for (size_t i = 0; i < size_; ++i) {
+            if (occupied_[i]) {
+                erase(i);
+            }
+        }
+        operator delete(data_, std::align_val_t(alignof(T)));
     }
 
     size_t size() const
@@ -37,15 +41,17 @@ public:
     void resize(size_t size)
     {
         assert(size > size_);
-        auto newData = new DataElem[size];
+        auto newData = alloc(size);
         for (size_t i = 0; i < size_; ++i) {
-            new (newData + i) T { std::move(*reinterpret_cast<T*>(data_ + i)) };
-            reinterpret_cast<T*>(data_ + i)->~T();
+            if (occupied_[i]) {
+                new (newData + i) T { std::move(data_[i]) };
+                data_[i].~T();
+            }
         }
-        delete[] data_;
+        operator delete(data_, std::align_val_t(alignof(T)));
         data_ = newData;
         size_ = size;
-        occupied_.resize(size, bool_ { false });
+        occupied_.resize(size, 0);
     }
 
     void insert(size_t index, const T& v)
@@ -61,50 +67,59 @@ public:
     template <typename... Args>
     T& emplace(size_t index, Args&&... args)
     {
+        assert(index < size_);
         assert(!contains(index));
-        if (index >= size_) {
-            resize(std::max(std::max(size_ * 2, index + 1), 0ul));
-        }
-        new (data_ + index) T { std::forward<Args>(args)... };
-        occupied_[index].value = true;
+        new (&data_[index]) T { std::forward<Args>(args)... };
+        occupied_[index] = 1;
         numOccupied_++;
-        return *reinterpret_cast<T*>(data_ + index);
+        return data_[index];
     }
 
     bool contains(size_t index) const
     {
-        return index < occupied_.size() && occupied_[index].value;
+        return index < occupied_.size() && occupied_[index];
     }
 
-    void remove(size_t index)
+    void erase(size_t index)
     {
         assert(contains(index));
-        reinterpret_cast<T*>(data_ + index)->~T();
-        occupied_[index].value = false;
+        data_[index].~T();
+        occupied_[index] = 0;
         numOccupied_--;
+    }
+
+    const T& get(size_t index) const
+    {
+        assert(contains(index));
+        return data_[index];
+    }
+
+    T& get(size_t index)
+    {
+        assert(contains(index));
+        return data_[index];
     }
 
     T& operator[](size_t index)
     {
-        assert(contains(index));
-        return *reinterpret_cast<T*>(data_ + index);
+        return get(index);
     }
 
     const T& operator[](size_t index) const
     {
-        assert(contains(index));
-        return *reinterpret_cast<const T*>(data_ + index);
+        return get(index);
     }
 
 private:
-    struct bool_ {
-        bool value;
-    };
+    T* alloc(size_t num)
+    {
+        return static_cast<T*>(::operator new(num * sizeof(T), std::align_val_t(alignof(T))));
+    }
 
-    DataElem* data_ = nullptr;
+    T* data_ = nullptr;
     size_t size_ = 0;
     size_t numOccupied_ = 0;
-    std::vector<bool_> occupied_;
+    std::vector<uint8_t> occupied_;
 };
 
 }
