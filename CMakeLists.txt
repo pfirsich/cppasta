@@ -40,7 +40,7 @@ if(CPPASTA_BUILD_TESTS)
   )
   FetchContent_MakeAvailable(Catch2)
 
-  add_executable(tests tests/unicode.cpp)
+  add_executable(tests tests/unicode.cpp tests/sparsevector.cpp)
   target_link_libraries(tests PRIVATE cppasta)
   target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 endif()
