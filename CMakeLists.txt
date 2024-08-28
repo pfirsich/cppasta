@@ -8,6 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 include(FetchContent)
 include(cmake/wall.cmake)
 
+option(CPPASTA_ENABLE_ASAN "Enable ASan" OFF)
 if (CPPASTA_ENABLE_ASAN)
   include(cmake/asan.cmake)
 endif()
@@ -40,7 +41,16 @@ if(CPPASTA_BUILD_TESTS)
   )
   FetchContent_MakeAvailable(Catch2)
 
-  add_executable(tests tests/unicode.cpp tests/sparsevector.cpp)
+  set(TESTS_SRC
+    tests/unicode.cpp
+    tests/sparsevector.cpp
+    tests/generational_index.cpp
+    tests/skipfield.cpp
+    tests/slotmap.cpp
+  )
+
+  add_executable(tests ${TESTS_SRC})
   target_link_libraries(tests PRIVATE cppasta)
   target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+  set_wall(tests)
 endif()
