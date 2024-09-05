@@ -1,5 +1,6 @@
 #pragma once
 
+#include <charconv>
 #include <limits>
 #include <optional>
 #include <string>
@@ -17,27 +18,23 @@ std::string hexString(const Container& container)
 
 // If Boost is available, use lexical_cast instead
 template <typename T = long long>
-std::optional<T> parseInt(const std::string& str, int base = 10)
+std::optional<T> parseInt(std::string_view str, int base = 10)
 {
-    static constexpr auto min = std::numeric_limits<T>::min();
-    static constexpr auto max = std::numeric_limits<T>::max();
-    using IntMax = std::conditional_t<std::is_unsigned_v<T>, uintmax_t, intmax_t>;
-    try {
-        size_t pos = 0;
-        IntMax val;
-        if constexpr (std::is_unsigned_v<T>) {
-            val = std::stoull(str, &pos, base);
-        } else {
-            val = std::stoll(str, &pos, base);
-        }
-        if (pos < str.size())
-            return std::nullopt;
-        if (val < min || val > max)
-            return std::nullopt;
-        return static_cast<T>(val);
-    } catch (const std::exception&) {
+    constexpr auto min = std::numeric_limits<T>::min();
+    constexpr auto max = std::numeric_limits<T>::max();
+
+    std::conditional_t<std::is_unsigned_v<T>, uintmax_t, intmax_t> val = 0;
+    const auto res = std::from_chars(str.data(), str.data() + str.size(), val, base);
+    if (res.ec != std::errc {}) {
         return std::nullopt;
     }
+    if (res.ptr < str.data() + str.size()) {
+        return std::nullopt;
+    }
+    if (val < min || val > max) {
+        return std::nullopt;
+    }
+    return static_cast<T>(val);
 }
 
 std::optional<float> parseFloat(const std::string& str);
