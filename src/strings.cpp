@@ -1,5 +1,7 @@
 #include "cppasta/strings.hpp"
 
+#include <cstdlib>
+
 namespace pasta {
 
 std::string hexString(const void* data, size_t size)
@@ -19,15 +21,26 @@ std::string hexString(const void* data, size_t size)
 
 std::optional<float> parseFloat(const std::string& str)
 {
-    try {
-        size_t pos = 0;
-        const auto val = std::stof(str, &pos);
-        if (pos < str.size())
-            return std::nullopt;
-        return val;
-    } catch (const std::exception& exc) {
+#if defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L
+    float val = 0.0f;
+    const auto res
+        = std::from_chars(str.data(), str.data() + str.size(), val, std::chars_format::general);
+    if (res.ec != std::errc {}) {
         return std::nullopt;
     }
+    if (res.ptr < str.data() + str.size()) {
+        return std::nullopt;
+    }
+    return val;
+#else
+    // clang doesn't support from_chars for floats, after 6 years of it being in the standard, wtf
+    char* strEnd = nullptr;
+    const auto val = std::strtof(str.c_str(), &strEnd);
+    if (val == HUGE_VALF || strEnd != str.c_str() + str.size()) {
+        return std::nullopt;
+    }
+    return val;
+#endif
 }
 
 std::string toLower(std::string_view str)
