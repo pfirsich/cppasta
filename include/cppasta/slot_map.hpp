@@ -173,8 +173,8 @@ public:
     Key next(Key key) const
     {
         auto i = key.valid() ? key.idx() + 1 : 0;
-        i += skipfield_.get_num_skipped(i);
-        for (; i < storage_.size(); ++i) {
+        i += static_cast<decltype(i)>(skipfield_.get_num_skipped(i));
+        for (; static_cast<size_t>(i) < storage_.size(); ++i) {
             // If an actual skip field is used, the first iteration of this loop should return
             if (storage_.gen(i) > 0) {
                 return Key(i, storage_.gen(i));
