@@ -157,9 +157,17 @@ public:
 
     const T* find(Key key) const { return contains(key) ? get(key) : nullptr; }
 
-    T* get(Key key) { return storage_.data(key.idx()); }
+    T* get(Key key)
+    {
+        assert(contains(key));
+        return storage_.data(key.idx());
+    }
 
-    const T* get(Key key) const { return storage_.data(key.idx()); }
+    const T* get(Key key) const
+    {
+        assert(contains(key));
+        return storage_.data(key.idx());
+    }
 
     // Because you delete by key, next returns Key (also no const-overloading)
     Key next(Key key) const
