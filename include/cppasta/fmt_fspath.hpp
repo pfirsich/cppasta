@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 
 #include <fmt/format.h>
 
@@ -12,8 +13,10 @@ struct fmt::formatter<std::filesystem::path> {
     }
 
     template <typename FormatContext>
-    auto format(const std::filesystem::path& path, FormatContext& ctx)
+    auto format(const std::filesystem::path& path, FormatContext& ctx) const
     {
-        return format_to(ctx.out(), "{}", path.u8string());
+        const auto utf8Path = path.u8string();
+        return format_to(ctx.out(), "{}",
+            std::string(reinterpret_cast<const char*>(utf8Path.data()), utf8Path.size()));
     }
 };

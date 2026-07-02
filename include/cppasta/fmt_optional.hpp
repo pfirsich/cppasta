@@ -12,7 +12,7 @@ struct fmt::formatter<std::optional<T>> {
     }
 
     template <typename FormatContext>
-    auto format(const std::optional<T>& opt, FormatContext& ctx)
+    auto format(const std::optional<T>& opt, FormatContext& ctx) const
     {
         if (opt)
             return format_to(ctx.out(), "{}", *opt);

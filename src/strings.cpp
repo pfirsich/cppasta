@@ -1,5 +1,6 @@
 #include "cppasta/strings.hpp"
 
+#include <cstdint>
 #include <cstdlib>
 
 namespace pasta {

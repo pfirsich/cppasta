@@ -1,9 +1,13 @@
 #pragma once
 
 #include <charconv>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <vector>
 
 namespace pasta {
@@ -23,7 +27,7 @@ std::optional<T> parseInt(std::string_view str, int base = 10)
     constexpr auto min = std::numeric_limits<T>::min();
     constexpr auto max = std::numeric_limits<T>::max();
 
-    std::conditional_t<std::is_unsigned_v<T>, uintmax_t, intmax_t> val = 0;
+    std::conditional_t<std::is_unsigned_v<T>, std::uintmax_t, std::intmax_t> val = 0;
     const auto res = std::from_chars(str.data(), str.data() + str.size(), val, base);
     if (res.ec != std::errc {}) {
         return std::nullopt;

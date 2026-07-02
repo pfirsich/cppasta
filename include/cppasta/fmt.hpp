@@ -1,29 +1,53 @@
 #pragma once
 
+#include <cstdio>
+#include <string_view>
+#include <utility>
+
 #include <fmt/format.h>
 
 namespace pasta {
 
-template <typename... Args>
-void println(Args&&... args)
+inline void println(std::FILE* f, std::string_view str)
 {
-    fmt::print(std::forward<Args>(args)...);
+    std::fwrite(str.data(), 1, str.size(), f);
+    std::putc('\n', f);
+    std::fflush(f);
+}
+
+inline void println(std::string_view str)
+{
+    println(stdout, str);
+}
+
+template <typename... Args>
+requires(sizeof...(Args) > 0)
+void println(fmt::format_string<Args...> format, Args&&... args)
+{
+    fmt::print(format, std::forward<Args>(args)...);
     std::putc('\n', stdout);
     std::fflush(stdout);
 }
 
 template <typename... Args>
-void println(std::FILE* f, Args&&... args)
+requires(sizeof...(Args) > 0)
+void println(std::FILE* f, fmt::format_string<Args...> format, Args&&... args)
 {
-    fmt::print(f, std::forward<Args>(args)...);
+    fmt::print(f, format, std::forward<Args>(args)...);
     std::putc('\n', f);
     std::fflush(f);
 }
 
-template <typename... Args>
-void printErr(Args&&... args)
+inline void printErr(std::string_view str)
 {
-    println(stderr, std::forward<Args>(args)...);
+    println(stderr, str);
+}
+
+template <typename... Args>
+requires(sizeof...(Args) > 0)
+void printErr(fmt::format_string<Args...> format, Args&&... args)
+{
+    ::pasta::println(stderr, format, std::forward<Args>(args)...);
 }
 
 }
